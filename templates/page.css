@@ -113,6 +113,11 @@ a
   text-decoration: none;
 }
 
+.red
+{
+  color: #c35;
+}
+
 /* Used for post titles on the archive page. */
 h3
 {
@@ -420,8 +425,8 @@ nav a
    * viewports get more room because the words might not fit otherwise. */
   header
   {
-    margin-left: 2.8em;
-    margin-right: 2.8em;
+    margin-left: 1.7em;
+    margin-right: 1.7em;
   }
 }
 

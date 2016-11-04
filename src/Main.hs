@@ -1,4 +1,5 @@
 -- Copyright 2015 Ruud van Asseldonk
+-- Copyright 2016 Amin Bandali
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License version 3. See
@@ -110,7 +111,7 @@ writePage pageId url pageContext template config = do
 
 writeIndex :: Template.Context -> Template.Template -> Config -> IO Artifact
 writeIndex globalContext = writePage 0 "/" context
-  where context = M.unions [ Template.stringField "title"     "Ruud van Asseldonk"
+  where context = M.unions [ Template.stringField "title"     "Amin Bandali"
                            , Template.stringField "bold-font" "true"
                            , Template.stringField "light"     "true"
                            , globalContext ]
@@ -120,7 +121,7 @@ writeIndex globalContext = writePage 0 "/" context
 writeArchive :: Template.Context -> Template.Template -> [P.Post] -> Config -> IO Artifact
 writeArchive globalContext template posts = writePage 1 "/writing" context template
   where context = M.unions [ P.archiveContext posts
-                           , Template.stringField "title"     "Writing by Ruud van Asseldonk"
+                           , Template.stringField "title"     "Writing by Amin Bandali"
                            , Template.stringField "bold-font" "true"
                            , globalContext ]
 
@@ -128,7 +129,7 @@ writeArchive globalContext template posts = writePage 1 "/writing" context templ
 -- to the destination directory.
 writeContact :: Template.Context -> Template.Template -> Config -> IO Artifact
 writeContact globalContext = writePage 2 "/contact" context
-  where context = M.unions [ Template.stringField "title"     "Contact Ruud van Asseldonk"
+  where context = M.unions [ Template.stringField "title"     "Contact Amin Bandali"
                            , Template.stringField "light"     "true"
                            , globalContext ]
 

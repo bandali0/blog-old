@@ -1,9 +1,9 @@
 name:          blog
 version:       3.0.0
 synopsis:      Static site generator for my personal blog
-homepage:      https://ruudvanasseldonk.com
-author:        Ruud van Asseldonk <dev@veniogames.com>
-copyright:     Ruud van Asseldonk 2015
+homepage:      https://aminb.org
+author:        Amin Bandali <amin@aminb.org>
+copyright:     Amin Bandali 2016
 license:       GPL-3
 license-file:  licence
 build-type:    Simple
