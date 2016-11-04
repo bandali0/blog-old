@@ -57,9 +57,9 @@ data Post = Post { title     :: String
                  , synopsis  :: String
                  , body      :: String } deriving (Show) -- TODO: This is for debugging only, remove.
 
--- Returns the post date, formatted like "17 April, 2015".
+-- Returns the post date, formatted like "April 17, 2015".
 longDate :: Post -> String
-longDate = formatTime defaultTimeLocale "%e %B, %Y" . date
+longDate = formatTime defaultTimeLocale "%B %e, %Y" . date
 
 -- Returns the post date, formatted like "2015-04-17".
 shortDate :: Post -> String
@@ -71,8 +71,7 @@ year post = y where (y, _m, _d) = toGregorian $ date post
 
 -- Returns the canonical absolute url for a particular post.
 url :: Post -> String
-url post = "/" ++ datePath ++ "/" ++ (slug post)
-  where datePath = formatTime defaultTimeLocale "%Y/%m/%d" $ date post
+url post = "/writing/" ++ slug post
 
 -- Returns whether post has code in it that requires a monospace font.
 usesMonoFont :: Post -> Bool

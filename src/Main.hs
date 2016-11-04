@@ -182,7 +182,7 @@ main = do
 
   copyFile "assets/.htaccess"            "out/.htaccess"
   copyFile "assets/favicon.png"          "out/favicon.png"
-  copyFile "assets/ruudvanasseldonk.asc" "out/contact/ruudvanasseldonk.asc"
+  copyFile "assets/resume.pdf"           "out/resume.pdf"
 
   putStrLn "Writing atom feed..."
   writeFeed (templates M.! "feed.xml") posts config
