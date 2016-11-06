@@ -1,5 +1,6 @@
 ---
 title: Arch Linux on MacBook Air 2013
+break: on MacBook
 date: 2016-11-01
 synopsis: How I set up Arch Linux with Full-Disk Encryption alongside macOS on my MacBook Air.
 ---
