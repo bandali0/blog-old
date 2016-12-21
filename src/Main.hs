@@ -48,11 +48,20 @@ readTemplates = mapFilesFileName $ (fmap Template.parse) . readFile
 -- Reads a post from a file.
 readPost :: FilePath -> IO P.Post
 readPost fname = fmap makePost $ readFile fname
-  where makePost body = P.parse (takeBaseName fname) body
+  where makePost body = P.parsePost (takeBaseName fname) body
+
+-- Reads a talk from a file.
+readTalk :: FilePath -> IO P.Talk
+readTalk fname = fmap makeTalk $ readFile fname
+  where makeTalk body = P.parseTalk (takeBaseName fname) body
 
 -- Reads and renders all posts in the given directory.
 readPosts :: FilePath -> IO [P.Post]
 readPosts = mapFilesIf ((== ".md") . takeExtension) readPost
+
+-- Reads and renders all talks in the given directory.
+readTalks :: FilePath -> IO [P.Talk]
+readTalks = mapFilesIf ((== ".md") . takeExtension) readTalk
 
 -- An artifact is a numbered page plus its html contents.
 type Artifact = (Int, String)
@@ -94,6 +103,32 @@ writePosts tmpl ctx posts config = fmap snd $ foldM writePost (1, []) withRelate
           gzipFile destFile
           return $ (i + 1, artifact:artifacts)
 
+-- Given the talk template and the global context, expands the template for all
+-- of the talks and writes them to the output directory. This also prints a list
+-- of processed talks to the standard output. Start numbering talk artifacts at
+-- 451, lower indices are reserved for posts and other pages.
+writeTalks :: Template.Template -> Template.Context -> [P.Talk] -> Config -> IO [Artifact]
+writeTalks tmpl ctx talks config = fmap snd $ foldM writeTalk (1, []) withRelated
+  where total       = length talks
+        pageIdSeed  = 451
+        withRelated = P.selectRelated talks
+        writeTalk (i, artifacts) (talk, related) = do
+          let destFile = (outDir config) </> (drop 1 $ P.url talk) </> "index.html"
+              pageId   = pageIdSeed + i
+              context  = M.unions [ P.context talk
+                                  , P.relatedContext related
+                                  , pageIdContext pageId
+                                  , ctx]
+              html     = Template.apply tmpl context
+          withImages  <- Image.processImages (imageDir config) html
+          let minified = minifyHtml withImages
+              artifact = (pageId, minified)
+          putStrLn $ "[" ++ (show i) ++ " of " ++ (show total) ++ "] " ++ (P.slug talk)
+          createDirectoryIfMissing True $ takeDirectory destFile
+          writeFile destFile minified
+          gzipFile destFile
+          return $ (i + 1, artifact:artifacts)
+
 -- Writes a general (non-post) page given a template and expansion context.
 writePage :: Int -> String -> Template.Context -> Template.Template -> Config -> IO Artifact
 writePage pageId url pageContext template config = do
@@ -125,11 +160,28 @@ writeArchive globalContext template posts = writePage 1 "/writing" context templ
                            , Template.stringField "bold-font" "true"
                            , globalContext ]
 
+-- Given the archive template and the global context, writes the talks archive page
+-- to the destination directory.
+writeTalksArchive :: Template.Context -> Template.Template -> [P.Talk] -> Config -> IO Artifact
+writeTalksArchive globalContext template talks = writePage 2 "/talks" context template
+  where context = M.unions [ P.talksContext talks
+                           , Template.stringField "title"     "Talks by Amin Bandali"
+                           , Template.stringField "bold-font" "true"
+                           , globalContext ]
+
 -- Given the contact template and the global context, writes the contact page
 -- to the destination directory.
 writeContact :: Template.Context -> Template.Template -> Config -> IO Artifact
-writeContact globalContext = writePage 2 "/contact" context
+writeContact globalContext = writePage 3 "/contact" context
   where context = M.unions [ Template.stringField "title"     "Contact Amin Bandali"
+                           , Template.stringField "light"     "true"
+                           , globalContext ]
+
+-- Given the cv template and the global context, writes the cv page
+-- to the destination directory.
+writeCV :: Template.Context -> Template.Template -> Config -> IO Artifact
+writeCV globalContext = writePage 4 "/cv" context
+  where context = M.unions [ Template.stringField "title"     "Amin Bandali's CV"
                            , Template.stringField "light"     "true"
                            , globalContext ]
 
@@ -138,6 +190,17 @@ writeFeed :: Template.Template -> [P.Post] -> Config -> IO ()
 writeFeed template posts config = do
   let url      = "/feed.xml"
       context  = P.feedContext posts
+      atom     = Template.apply template context
+      destFile = (outDir config) </> (tail url)
+  createDirectoryIfMissing True (outDir config)
+  writeFile destFile atom
+  gzipFile destFile
+
+-- Given the feed template and list of talks, writes an atom feed.
+writeTalksFeed :: Template.Template -> [P.Talk] -> Config -> IO ()
+writeTalksFeed template talks config = do
+  let url      = "/talks.xml"
+      context  = P.talksFeedContext talks
       atom     = Template.apply template context
       destFile = (outDir config) </> (tail url)
   createDirectoryIfMissing True (outDir config)
@@ -159,6 +222,7 @@ main :: IO ()
 main = do
   templates <- readTemplates "templates/"
   posts     <- readPosts     "posts/"
+  talks     <- readTalks     "talks/"
 
   -- Create a context with the field "year" set to the current year, and create
   -- a context that contains all of the templates, to handle includes.
@@ -175,18 +239,23 @@ main = do
   putStrLn "Writing posts..."
   postArtifacts <- writePosts (templates M.! "post.html") globalContext posts config
 
-  putStrLn "Writing other pages..."
-  indexArtifact   <- writeIndex   globalContext (templates M.! "index.html")   config
-  contactArtifact <- writeContact globalContext (templates M.! "contact.html") config
-  archiveArtifact <- writeArchive globalContext (templates M.! "archive.html") posts config
+  putStrLn "Writing talks..."
+  talkArtifacts <- writeTalks (templates M.! "talk.html") globalContext talks config
 
-  copyFile "assets/.htaccess"            "out/.htaccess"
-  copyFile "assets/favicon.png"          "out/favicon.png"
-  copyFile "assets/resume.pdf"           "out/resume.pdf"
+  putStrLn "Writing other pages..."
+  indexArtifact   <- writeIndex        globalContext (templates M.! "index.html")   config
+  contactArtifact <- writeContact      globalContext (templates M.! "contact.html") config
+  cvArtifact      <- writeCV           globalContext (templates M.! "cv.html") config
+  archiveArtifact <- writeArchive      globalContext (templates M.! "archive.html") posts config
+  talksArtifact   <- writeTalksArchive globalContext (templates M.! "talks.html") talks config
+
+  copyFile "assets/favicon.png" "out/favicon.png"
 
   putStrLn "Writing atom feed..."
   writeFeed (templates M.! "feed.xml") posts config
+  writeTalksFeed (templates M.! "talks.xml") talks config
 
   putStrLn "Subsetting fonts..."
-  let artifacts = indexArtifact : contactArtifact : archiveArtifact : postArtifacts
+  let artifacts = indexArtifact : contactArtifact : cvArtifact : archiveArtifact
+                  : talksArtifact : postArtifacts ++ talkArtifacts
   subsetFontsForArtifacts artifacts "out/fonts/"

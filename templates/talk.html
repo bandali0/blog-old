@@ -1,0 +1,24 @@
+{{include head.html}}
+  <body>
+    <article id="content" itemscope>
+      <header>
+        <h1>{{header}}</h1>
+        {{if part}}<p class="smcp">Part {{part}}</p>{{end}}
+        {{if subheader}}<h2>{{subheader}}</h2>{{end}}
+        <p>
+          talk by <a href="/" class="author">Amin Bandali</a><br>
+          given on <time datetime="{{short-date}}" itemprop="datePublished">{{long-date}}</time>
+        </p>
+      </header>
+      {{content}}
+    </article>
+    <section id="teaser-section">
+      <div id="teaser">
+        <p class="smcp">More talks</p>
+        <h2>{{further.title}}</h2>
+        <p>{{further.synopsis-html}} <a href="{{further.url}}" class="smcp">Find out more</a></p>
+      </div>
+    </section>
+    {{include footer.html}}
+  </body>
+</html>

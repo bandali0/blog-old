@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Amin Bandali</title>
+  <id>https://aminb.org/</id>
+  <icon>/favicon.png</icon>
+  <link href="https://aminb.org/talks" rel="alternate"/>
+  <link href="https://aminb.org/talks.xml" rel="self"/>
+  <author>
+    <name>Amin Bandali</name>
+  </author>
+  <updated>{{updated}}T00:00:00Z</updated>
+  {{foreach talk}}
+  <entry>
+    <title>{{title}}</title>
+    <id>https://aminb.org{{url}}</id>
+    <link href="https://aminb.org{{url}}" rel="alternate"/>
+    <updated>{{short-date}}T00:00:00Z</updated>
+    <published>{{short-date}}T00:00:00Z</published>
+    <summary>{{synopsis}}</summary>
+  </entry>
+  {{end}}
+</feed>

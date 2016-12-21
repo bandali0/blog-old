@@ -11,4 +11,5 @@ mozjpeg='/opt/mozjpeg/bin/cjpeg -quality'
 
 mkdir -p compressed
 
-$mozjpeg 90.0 original/is-it-worth-it.jpg > compressed/is-it-worth-it.jpg
+$mozjpeg 90.0 original/is-it-worth-it.jpg       > compressed/is-it-worth-it.jpg
+$mozjpeg 80.0 original/cshub-techtalk-feb12.jpg > compressed/cshub-techtalk-feb12.jpg
