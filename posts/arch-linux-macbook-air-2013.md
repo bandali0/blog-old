@@ -51,6 +51,31 @@ dd bs=4M if=/path/to/archlinux.iso of=/dev/sdx status=progress && sync
 Replace `/path/to/archlinux.iso` with the path to the Arch image you
 have downloaded, and `/dev/sdx` with your drive.
 
+## Booting up from the USB
+
+After creating the install USB, reboot your laptop and hold the alt key and boot
+into the USB.
+
+When booting is complete and you're presented with the prompt, it's a good time
+to make sure you're connected to the internet (see the _note_ at the top of this
+post).
+
+Use `ping` to verify that you've established a connection:
+
+```bash
+ping archlinux.org
+```
+
+## Updating the system clock
+
+Once you're connected to the internet, make sure the system clock is accurate:
+
+```bash
+timedatectl set-ntp true  # start and enable systemd-timesyncd
+```
+
+You can check the service status using `timedatectl status`.
+
 ## Partitioning
 
 I won't dive into partitioning and instead, I'll refer you to
@@ -140,7 +165,6 @@ arch-chroot /mnt /bin/bash
 passwd  # set the root password
 echo myhostname > /etc/hostname  # set the hostname
 ln -s /usr/share/zoneinfo/Canada/Eastern /etc/localtime  # time zone
-timedatectl set-ntp true  # update system clock
 hwclock --systohc --utc   # write system clock to hardware clock (UTC)
 useradd -m -G wheel -s /bin/bash myuser  # create myuser
 passwd myuser  # set the password for myuser
